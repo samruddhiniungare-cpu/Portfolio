@@ -32,8 +32,8 @@ function Floor() {
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.005, 0]}>
       <planeGeometry args={[44, 44]} />
       <MeshReflectorMaterial
-        blur={[280, 90]}
-        resolution={640}
+        blur={[160, 56]}
+        resolution={384}
         mixBlur={1}
         mixStrength={14}
         roughness={0.92}
@@ -71,7 +71,7 @@ export default function HeroScene({ active }: { active: boolean }) {
 
   return (
     <Canvas
-      dpr={[1, 1.75]}
+      dpr={[1, 1.35]}
       frameloop={active ? "always" : "never"}
       camera={{ position: [4.6, 1.75, 6.9], fov: 34 }}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
@@ -87,7 +87,7 @@ export default function HeroScene({ active }: { active: boolean }) {
       <pointLight position={[5, 1.4, 5]} intensity={0.45} color="#7d9bff" decay={0} />
 
       <Suspense fallback={null}>
-        <Environment resolution={256}>
+        <Environment resolution={128}>
           <Lightformer intensity={2.6} position={[0, 5, 0]} rotation={[-Math.PI / 2, 0, 0]} scale={[11, 3, 1]} form="rect" />
           <Lightformer intensity={0.9} position={[-6, 2, 3]} rotation={[0, Math.PI / 3, 0]} scale={[4, 1.2, 1]} form="rect" />
           <Lightformer intensity={0.7} position={[7, 2.5, -2]} rotation={[0, -Math.PI / 2.6, 0]} scale={[4, 1, 1]} form="rect" />
@@ -97,7 +97,7 @@ export default function HeroScene({ active }: { active: boolean }) {
         <F1Car mode="hero" />
         <Floor />
         <GridSlot />
-        <ContactShadows position={[0, 0.005, 0]} opacity={0.72} scale={13} blur={2.4} far={2.2} resolution={512} />
+        <ContactShadows position={[0, 0.005, 0]} opacity={0.72} scale={13} blur={2.4} far={2.2} resolution={320} />
       </Suspense>
 
       <CameraRig mode={camMode} />

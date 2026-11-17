@@ -414,7 +414,7 @@ export default function GarageScene({
 
   return (
     <Canvas
-      dpr={[1, 1.6]}
+      dpr={[1, 1.3]}
       frameloop={active ? "always" : "never"}
       camera={{ position: [5.4, 2.3, 7.6], fov: 33 }}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
@@ -431,7 +431,7 @@ export default function GarageScene({
 
       <Suspense fallback={null}>
         {/* No external HDR preset — CSP-safe; Lightformers only (same as HeroScene) */}
-        <Environment resolution={256}>
+        <Environment resolution={128}>
           <Lightformer intensity={1.3} position={[0, 5, 0]} rotation={[-Math.PI / 2, 0, 0]} scale={[10, 3, 1]} form="rect" />
           <Lightformer intensity={0.6} position={[-6, 2, 3]} rotation={[0, Math.PI / 3, 0]} scale={[4, 1.2, 1]} form="rect" />
           <Lightformer intensity={0.45} position={[6, 2.5, -2]} rotation={[0, -Math.PI / 2.6, 0]} scale={[4, 1, 1]} form="rect" />
@@ -466,7 +466,7 @@ export default function GarageScene({
           fadeDistance={30}
           fadeStrength={1.6}
         />
-        <ContactShadows position={[0, 0.005, 0]} opacity={0.6} scale={14} blur={2.6} far={2.4} resolution={512} />
+        <ContactShadows position={[0, 0.005, 0]} opacity={0.6} scale={14} blur={2.6} far={2.4} resolution={320} />
       </Suspense>
 
       {manualOrbit && (

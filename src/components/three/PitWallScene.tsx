@@ -478,7 +478,7 @@ export default function PitWallScene({
 
   return (
     <Canvas
-      dpr={[1, 1.6]}
+      dpr={[1, 1.25]}
       frameloop={active ? "always" : "never"}
       camera={{ position: [0, 0, 0], fov: 44, near: 0.1, far: 40 }}
       gl={{ antialias: true, alpha: true }}

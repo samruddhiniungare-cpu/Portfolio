@@ -1,4 +1,5 @@
 import { AppProvider } from "./context/AppContext";
+import Preloader from "./components/Preloader";
 import RacingLine from "./components/RacingLine";
 import SectionBridge from "./components/SectionBridge";
 import Hero from "./components/sections/Hero";
@@ -13,6 +14,7 @@ import Footer from "./components/sections/Footer";
 export default function App() {
   return (
     <AppProvider>
+      <Preloader />
       <main id="race-main" style={{ position: "relative" }}>
         <RacingLine />
         <Hero />

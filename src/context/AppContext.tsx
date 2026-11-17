@@ -61,7 +61,7 @@ function applyAccent(hex: string) {
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [ready, setReady] = useState(true);
+  const [ready, setReady] = useState(false);
   const [accent, setAccentState] = useState(liveries[0].hex);
   const [goldUnlocked, setGoldUnlocked] = useState(
     () => typeof window !== "undefined" && localStorage.getItem("apex_gold") === "1"

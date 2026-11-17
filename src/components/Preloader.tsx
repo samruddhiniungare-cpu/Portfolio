@@ -1,144 +1,96 @@
-import { useRef, useState } from "react";
-import { useGSAP } from "@gsap/react";
-import { gsap } from "../lib/gsap";
+import { useEffect, useState } from "react";
+import { driver } from "../data/portfolio";
 import { useApp } from "../context/AppContext";
 import "./Preloader.css";
 
-const STATUS = ["INITIALIZING TELEMETRY", "WARMING TYRES", "TO THE GRID"];
+const preloadPortrait = () => new Promise<void>((resolve) => {
+  const image = new Image();
+  image.onload = () => {
+    if (typeof image.decode === "function") void image.decode().catch(() => undefined).finally(resolve);
+    else resolve();
+  };
+  image.onerror = () => resolve();
+  image.src = "/samruddhi-portrait.jpeg";
+});
 
-function Tire() {
-  const treads = Array.from({ length: 16 }, (_, i) => (i / 16) * 360);
-  const spokes = Array.from({ length: 6 }, (_, i) => (i / 6) * 360);
-  return (
-    <svg className="pl-tire-svg" viewBox="0 0 120 120" aria-hidden="true">
-      <circle cx="60" cy="60" r="56" fill="#0e0e11" />
-      <circle cx="60" cy="60" r="56" fill="none" stroke="#1c1c21" strokeWidth="7" />
-      {treads.map((a) => (
-        <rect key={a} x="57.5" y="2" width="5" height="9" rx="1.5" fill="#26262c" transform={`rotate(${a} 60 60)`} />
-      ))}
-      <circle cx="60" cy="60" r="44" fill="none" stroke="var(--accent)" strokeWidth="3.5" strokeDasharray="40 236" strokeLinecap="round" />
-      <circle cx="60" cy="60" r="36" fill="#141418" stroke="#2a2a31" strokeWidth="2" />
-      {spokes.map((a) => (
-        <rect key={a} x="56.5" y="26" width="7" height="34" rx="3" fill="#1f1f25" transform={`rotate(${a} 60 60)`} />
-      ))}
-      <circle cx="60" cy="60" r="9" fill="var(--accent)" />
-      <circle cx="60" cy="60" r="3.4" fill="#0a0a0c" />
-    </svg>
-  );
-}
+const loadFonts = async () => {
+  const fonts = document.fonts;
+  await Promise.race([
+    Promise.all([
+      fonts.load('700 1rem "Titillium Web"'),
+      fonts.load('500 1rem "JetBrains Mono"'),
+      fonts.load('700 1rem "Syne"'),
+    ]),
+    new Promise<void>((resolve) => window.setTimeout(resolve, 4500)),
+  ]);
+};
 
-/**
- * Tire rolls the progress in, five lights, lights out, page launches.
- * ~3.5s on first visit, ~2.5s on return visits.
- * (The reaction-time game lives in the Arcade → LIGHTS OUT.)
- */
+/** Holds the page until its profile image, type, and 3D scene code are ready. */
 export default function Preloader() {
   const { setReady, reduced } = useApp();
+  const [progress, setProgress] = useState(0);
+  const [leaving, setLeaving] = useState(false);
   const [gone, setGone] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const tireRef = useRef<HTMLDivElement>(null);
-  const skidRef = useRef<HTMLDivElement>(null);
-  const pctRef = useRef<HTMLSpanElement>(null);
-  const statusRef = useRef<HTMLSpanElement>(null);
-  const lightsRef = useRef<HTMLDivElement>(null);
-  const outRef = useRef<HTMLDivElement>(null);
 
-  useGSAP(
-    () => {
-      if (reduced) {
-        gsap.to(rootRef.current, {
-          autoAlpha: 0,
-          duration: 0.4,
-          delay: 0.3,
-          onComplete: () => {
-            setReady(true);
-            setGone(true);
-          },
-        });
-        return;
-      }
+  useEffect(() => {
+    let cancelled = false;
+    let exitTimer = 0;
+    const previousOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    const started = performance.now();
+    let completed = 0;
+    const total = 5;
+    const finishTask = () => {
+      completed += 1;
+      if (!cancelled) setProgress(Math.min(96, Math.round((completed / total) * 100)));
+    };
 
-      const returning = localStorage.getItem("apex_seen") === "1";
-      try {
-        localStorage.setItem("apex_seen", "1");
-      } catch {
-        /* fine */
-      }
+    const tasks = [
+      import("./three/HeroScene").then(finishTask),
+      import("./three/GarageScene").then(finishTask),
+      import("./three/PitWallScene").then(finishTask),
+      preloadPortrait().then(finishTask),
+      loadFonts().then(finishTask),
+    ];
 
-      const track = tireRef.current!.parentElement!;
-      const travel = () => track.clientWidth - 76;
-      const progress = { v: 0 };
-      const lights = Array.from(lightsRef.current!.children);
+    void Promise.allSettled(tasks).then(() => {
+      const minTime = reduced ? 180 : 700;
+      const wait = Math.max(0, minTime - (performance.now() - started));
+      window.setTimeout(() => {
+        if (cancelled) return;
+        setProgress(100);
+        document.documentElement.style.overflow = previousOverflow;
+        setReady(true);
+        setLeaving(true);
+        exitTimer = window.setTimeout(() => setGone(true), reduced ? 50 : 520);
+      }, wait);
+    });
 
-      const tl = gsap.timeline({
-        onComplete: () => {
-          setReady(true);
-          setGone(true);
-        },
-      });
-
-      tl.to(progress, {
-        v: 100,
-        duration: returning ? 1.2 : 2.2,
-        ease: "power2.inOut",
-        onUpdate: () => {
-          const p = progress.v / 100;
-          const x = travel() * p;
-          gsap.set(tireRef.current, { x, rotation: (x / (Math.PI * 76)) * 360 });
-          gsap.set(skidRef.current, { scaleX: p });
-          if (pctRef.current) pctRef.current.textContent = String(Math.round(progress.v)).padStart(3, "0");
-          if (statusRef.current) {
-            const s = STATUS[Math.min(STATUS.length - 1, Math.floor(p * STATUS.length))];
-            if (statusRef.current.textContent !== s) statusRef.current.textContent = s;
-          }
-        },
-      })
-        .to(lights, { "--lit": 1, stagger: 0.16, duration: 0.01 } as gsap.TweenVars, "+=0.1")
-        .to({}, { duration: 0.6 })
-        .set(lights, { "--lit": 0 } as gsap.TweenVars)
-        .set(outRef.current, { opacity: 1 })
-        .fromTo(outRef.current, { scale: 0.94 }, { scale: 1, duration: 0.2, ease: "power3.out" })
-        .to(rootRef.current, {
-          yPercent: -100,
-          duration: 0.95,
-          ease: "power4.inOut",
-          delay: 0.35,
-        });
-    },
-    { scope: rootRef }
-  );
+    return () => {
+      cancelled = true;
+      window.clearTimeout(exitTimer);
+      document.documentElement.style.overflow = previousOverflow;
+    };
+  }, [reduced, setReady]);
 
   if (gone) return null;
 
   return (
-    <div className="preloader" ref={rootRef} aria-label="Loading">
+    <div className={`preloader ${leaving ? "is-leaving" : ""}`} role="status" aria-live="polite" aria-label="Loading portfolio">
       <div className="pl-inner">
         <div className="pl-top mono">
-          <span>ANAS.NADEEM</span>
-          <span>
-            GRID&nbsp;<span ref={pctRef}>000</span>%
-          </span>
+          <span>{driver.firstName} {driver.lastName}</span>
+          <span>LOADING <b>{String(progress).padStart(2, "0")}%</b></span>
         </div>
-
-        <div className="pl-track">
-          <div className="pl-skid" ref={skidRef} />
-          <div className="pl-tire" ref={tireRef}>
-            <Tire />
-          </div>
+        <div className="pl-track" aria-hidden="true">
+          <div className="pl-skid" style={{ transform: `scaleX(${progress / 100})` }} />
+          <div className="pl-grid-lights"><i /><i /><i /><i /><i /></div>
         </div>
-
         <div className="pl-bottom mono">
-          <span ref={statusRef}>INITIALIZING TELEMETRY</span>
-          <span className="pl-blink">▮</span>
+          <span>{leaving ? "LIGHTS OUT · YOU'RE ON THE GRID" : "PREPARING YOUR RACE EXPERIENCE"}</span>
+          <span className="pl-blink" aria-hidden="true">▮</span>
         </div>
-
-        <div className="pl-lights" ref={lightsRef} aria-hidden="true">
-          <span /><span /><span /><span /><span />
-        </div>
-
-        <div className="pl-out display" ref={outRef}>
-          LIGHTS OUT<span className="text-accent">.</span>
-        </div>
+        <div className="pl-progress-track" aria-hidden="true"><span style={{ transform: `scaleX(${progress / 100})` }} /></div>
       </div>
     </div>
   );
