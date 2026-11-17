@@ -1,19 +1,28 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useTexture } from "@react-three/drei";
-import { projects, driver, type Project } from "../../data/portfolio";
+import { driver, type Project } from "../../data/portfolio";
 import { useApp } from "../../context/AppContext";
+import { experience } from "../../data/portfolio";
+
+const raceHistory: Project[] = experience.map((item, index) => ({
+  round: item.position,
+  name: item.role,
+  year: item.seasons,
+  description: item.points.join(" "),
+  stack: item.stack,
+  trackId: index,
+  status: "ACHIEVEMENT",
+}));
 
 /** ─────────────────────────────────────────────────────────────────────────
- *  THE PIT WALL — a curved bank of race-engineer monitors.
- *  The camera sits at the engineer's chair; you pan LEFT/RIGHT only,
- *  like sweeping your eyes across the timing screens.
+ *  THE RACE TRACK — a curved circuit of project displays.
+ *  Pan LEFT/RIGHT around Samruddhi's project grid, like following a circuit.
  *  ──────────────────────────────────────────────────────────────────────── */
 
 const RADIUS = 7.0;
 const COL_STEP = THREE.MathUtils.degToRad(28);
-/** Single row of larger monitors (was 4×2). */
+/** A single curved row of large project boards. */
 const SCREEN_W = 2.95;
 const SCREEN_H = 1.8;
 
@@ -25,14 +34,14 @@ export type WallApi = {
 /** true while the last pointer gesture was a drag — swallows the trailing click */
 const dragGuard = { active: false };
 
-/** Slot for index i — single curved row of 4 monitors, centered on the chair. */
+/** Slot for index i — project boards placed around the circuit. */
 function slotFor(i: number): { angle: number; y: number } {
-  const n = Math.max(1, projects.length);
+  const n = Math.max(1, raceHistory.length);
   const angle = (i - (n - 1) / 2) * COL_STEP;
   return { angle, y: 0 };
 }
 
-/** JetBrains-style label strip under each screen, drawn on canvas */
+/** High contrast project label strip, drawn on canvas. */
 function makeLabelTexture(round: string, name: string, status: string): THREE.CanvasTexture {
   const c = document.createElement("canvas");
   c.width = 1024;
@@ -63,6 +72,74 @@ function makeLabelTexture(round: string, name: string, status: string): THREE.Ca
   draw();
   document.fonts?.ready.then(draw);
   return tex;
+}
+
+/** High-contrast full-screen milestone copy, instead of generic thumbnails. */
+function makeBoardTexture(item: Project): THREE.CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1024;
+  canvas.height = 640;
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.anisotropy = 8;
+
+  const draw = () => {
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = "#101014";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const glow = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    glow.addColorStop(0, "rgba(225,6,0,.34)");
+    glow.addColorStop(.55, "rgba(225,6,0,.06)");
+    glow.addColorStop(1, "rgba(10,10,14,.1)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#e10600";
+    ctx.fillRect(0, 0, 12, canvas.height);
+    ctx.strokeStyle = "rgba(245,245,247,.14)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(28, 28, 968, 584);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.font = "700 28px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#ff5b50";
+    ctx.fillText(`RACE HISTORY  /  ${item.round}`, 60, 78);
+
+    ctx.font = "italic 900 58px 'Titillium Web', sans-serif";
+    const words = item.name.toUpperCase().split(/\s+/);
+    const lines: string[] = [];
+    let line = "";
+    for (const word of words) {
+      const candidate = line ? `${line} ${word}` : word;
+      if (ctx.measureText(candidate).width > 890 && line) {
+        lines.push(line);
+        line = word;
+      } else line = candidate;
+    }
+    if (line) lines.push(line);
+    ctx.fillStyle = "#f5f5f7";
+    lines.slice(0, 2).forEach((part, i) => ctx.fillText(part, 60, 190 + i * 76));
+    ctx.font = "700 26px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#d5d5dc";
+    ctx.fillText(`${item.year}  ·  ${item.status ?? "ACHIEVEMENT"}`, 60, 370);
+
+    ctx.font = "400 27px 'Titillium Web', sans-serif";
+    const descWords = item.description.split(/\s+/);
+    const descLines: string[] = [];
+    let descLine = "";
+    for (const word of descWords) {
+      const candidate = descLine ? `${descLine} ${word}` : word;
+      if (ctx.measureText(candidate).width > 890 && descLine) {
+        descLines.push(descLine);
+        descLine = word;
+      } else descLine = candidate;
+    }
+    if (descLine) descLines.push(descLine);
+    ctx.fillStyle = "#c2c2ca";
+    descLines.slice(0, 4).forEach((part, i) => ctx.fillText(part, 60, 435 + i * 42));
+    texture.needsUpdate = true;
+  };
+  draw();
+  document.fonts?.ready.then(draw);
+  return texture;
 }
 
 
@@ -146,7 +223,7 @@ function Monitor({
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
-  const tex = useTexture(project.image ?? "/projects/portfolio.png");
+  const tex = useMemo(() => makeBoardTexture(project), [project]);
   const labelTex = useMemo(
     () => makeLabelTexture(project.round, project.name, project.status ?? "ONLINE"),
     [project]
@@ -231,7 +308,7 @@ function Monitor({
 function ArcRails({ accent }: { accent: string }) {
   const rail = useMemo(() => {
     const pts: THREE.Vector3[] = [];
-    const span = COL_STEP * Math.max(1, projects.length - 1) + 0.5;
+    const span = COL_STEP * Math.max(1, raceHistory.length - 1) + 0.5;
     for (let i = 0; i <= 40; i++) {
       const a = -span / 2 + (span * i) / 40;
       pts.push(new THREE.Vector3(Math.sin(a) * (RADIUS + 0.12), 0, -Math.cos(a) * (RADIUS + 0.12)));
@@ -299,7 +376,7 @@ function PanRig({
     cam.fov = aspect < 0.9 ? 58 : aspect < 1.35 ? 48 : 40;
     cam.updateProjectionMatrix();
     // 4 large screens span wider — give a bit more pan travel
-    api.current.maxYaw = aspect < 0.9 ? 0.58 : aspect < 1.35 ? 0.38 : 0.22;
+    api.current.maxYaw = COL_STEP * ((raceHistory.length - 1) / 2) + (aspect < 0.9 ? 0.14 : 0.08);
   }, [camera, size, api]);
 
   const lastInteract = useRef(0);
@@ -327,7 +404,7 @@ function PanRig({
       if (travelled > 10) dragGuard.active = true; // it's a pan, not a click
       lastInteract.current = performance.now();
       const a = api.current;
-      a.yawTarget = THREE.MathUtils.clamp(a.yawTarget + dx * 0.0032, -a.maxYaw, a.maxYaw);
+      a.yawTarget = THREE.MathUtils.clamp(a.yawTarget + dx * 0.0042, -a.maxYaw, a.maxYaw);
     };
     const up = (e: PointerEvent) => {
       dragging = false;
@@ -364,7 +441,7 @@ function PanRig({
     const idleFor = performance.now() - lastInteract.current;
     const idleAmp = THREE.MathUtils.clamp((idleFor - 5000) / 4000, 0, 1);
     const drift = Math.sin(clock.elapsedTime * 0.22) * 0.055 * idleAmp;
-    yaw.current += (a.yawTarget + drift - yaw.current) * 0.075;
+    yaw.current += (a.yawTarget + drift - yaw.current) * 0.14;
     if (wallRef.current) wallRef.current.rotation.y = yaw.current;
 
     // gentle parallax: lean into the pointer, never off the chair
@@ -375,7 +452,11 @@ function PanRig({
     // drive the HTML progress thumb directly (no React re-render)
     const p = (yaw.current / a.maxYaw + 1) / 2;
     const elp = progressEl.current;
-    if (elp) elp.style.transform = `translateX(${(1 - p) * 100 * (100 / 28 - 1)}%)`;
+    if (elp) {
+      const thumbWidth = 100 / raceHistory.length;
+      elp.style.width = `${thumbWidth}%`;
+      elp.style.transform = `translateX(${p * (raceHistory.length - 1) * 100}%)`;
+    }
   });
   return null;
 }
@@ -414,7 +495,7 @@ export default function PitWallScene({
 
       <Suspense fallback={null}>
         <group ref={wallRef}>
-          {projects.map((p, i) => {
+          {raceHistory.map((p, i) => {
             const { angle, y } = slotFor(i);
             return (
               <Monitor
@@ -442,7 +523,7 @@ export default function PitWallScene({
       <CanvasTextPlane
         lines={[
           {
-            text: `${driver.lastName} — RACE ENGINEER`,
+            text: `${driver.fullName} — PROJECT CIRCUIT`,
             size: 42,
             color: "#3a3f45",
             y: 128,

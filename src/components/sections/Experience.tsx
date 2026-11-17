@@ -3,7 +3,7 @@ import { useGSAP } from "@gsap/react";
 import { gsap } from "../../lib/gsap";
 import SectionHeader from "../SectionHeader";
 import { useApp } from "../../context/AppContext";
-import { experience } from "../../data/portfolio";
+import { projects } from "../../data/portfolio";
 import "./Experience.css";
 
 export default function Experience() {
@@ -62,25 +62,23 @@ export default function Experience() {
             <div className="xp-road-progress" />
           </div>
 
-          {experience.map((e, i) => (
-            <article className={`xp-item ${i % 2 === 0 ? "xp-item--right" : "xp-item--left"}`} key={`${e.role}-${e.company}`}>
-              <div className="xp-badge display" aria-label={`Position ${e.position}`}>
-                {e.position}
+          {projects.map((project, i) => (
+            <article className={`xp-item ${i % 2 === 0 ? "xp-item--right" : "xp-item--left"}`} key={project.name}>
+              <div className="xp-badge display" aria-label={`Round ${project.round}`}>
+                {project.round}
               </div>
               <div className="xp-card">
                 <div className="xp-card-top mono">
-                  <span className="xp-season">{e.seasons}</span>
-                  <span className="xp-type">{e.type}</span>
+                  <span className="xp-season">{project.year}</span>
+                  <span className="xp-type">AI / ML PROJECT</span>
                 </div>
-                <h3 className="xp-role display hl-reveal">{e.role}</h3>
-                <div className="xp-company mono">@ {e.company}</div>
+                <h3 className="xp-role display hl-reveal">{project.name}</h3>
+                <div className="xp-company mono">{project.stack.join(" · ")}</div>
                 <ul className="xp-points">
-                  {e.points.map((p) => (
-                    <li key={p}>{p}</li>
-                  ))}
+                  <li>{project.description}</li>
                 </ul>
                 <div className="xp-stack">
-                  {e.stack.map((s) => (
+                  {project.stack.map((s) => (
                     <span className="chip" key={s}>
                       <span>{s}</span>
                     </span>

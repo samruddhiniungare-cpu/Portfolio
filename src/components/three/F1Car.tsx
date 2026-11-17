@@ -360,6 +360,7 @@ export default function F1Car({
 
   const nameTex = useMemo(() => makeTextTexture(`${driver.firstName} ${driver.lastName}`, true), []);
   const numSmallTex = useMemo(() => makeTextTexture(driver.number), []);
+  const teamTex = useMemo(() => makeTextTexture("AI  /  ML  ·  PYTHON"), []);
 
   const smokeTex = useMemo(() => {
     const c = document.createElement("canvas");
@@ -593,6 +594,13 @@ export default function F1Car({
       >
         <planeGeometry args={[1.35, 0.24]} />
         {decal(nameTex)}
+      </mesh>
+      <mesh
+        position={[-0.48, 0.26, sign * 0.99]}
+        rotation={[0, sign > 0 ? 0 : Math.PI, sign > 0 ? -0.045 : 0.045]}
+      >
+        <planeGeometry args={[0.9, 0.16]} />
+        {decal(teamTex)}
       </mesh>
     </group>
   );

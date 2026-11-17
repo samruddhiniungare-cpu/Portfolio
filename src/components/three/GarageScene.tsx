@@ -476,8 +476,8 @@ export default function GarageScene({
           minPolarAngle={Math.PI * 0.22}
           maxPolarAngle={Math.PI * 0.48}
           target={[0, 0.72, 0]}
-          rotateSpeed={0.55}
-          dampingFactor={0.08}
+          rotateSpeed={1.55}
+          dampingFactor={0.14}
           enableDamping
         />
       )}

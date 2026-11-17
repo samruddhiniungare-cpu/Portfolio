@@ -12,15 +12,29 @@
 /* ── driver card ── */
 .driver-card {
   position: relative;
-  padding: 26px 26px 30px;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.045), transparent 38%),
-    var(--panel);
-  border: 1px solid var(--line);
-  border-top: 3px solid var(--accent);
+  width: 100%;
+  aspect-ratio: 0.78;
+  background: var(--panel);
+  border: 1px solid rgba(var(--accent-rgb), 0.72);
   transform-style: preserve-3d;
   overflow: hidden;
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%);
+  box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.14), 0 18px 70px rgba(var(--accent-rgb), 0.12);
+  transition: box-shadow 0.45s ease, border-color 0.45s ease;
+}
+
+.driver-card.is-glowing {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.42), 0 0 42px rgba(var(--accent-rgb), 0.3), 0 24px 90px rgba(var(--accent-rgb), 0.2);
+}
+
+.driver-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
 }
 
 /* carbon-fibre weave */
@@ -36,13 +50,21 @@
 
 .driver-card-glare {
   position: absolute;
-  inset: -40%;
+  inset: 0;
   pointer-events: none;
   background: radial-gradient(
-    300px circle at var(--gx, 50%) var(--gy, 50%),
-    rgba(255, 255, 255, 0.07),
-    transparent 60%
+    340px circle at var(--gx, 50%) var(--gy, 50%),
+    rgba(255, 255, 255, 0.25),
+    rgba(var(--accent-rgb), 0.16) 28%,
+    transparent 70%
   );
+  mix-blend-mode: screen;
+  opacity: 0.75;
+  transition: opacity 0.5s ease;
+}
+
+.driver-card:not(.is-glowing) .driver-card-glare {
+  opacity: 0.12;
 }
 
 .driver-card-head {
@@ -68,14 +90,13 @@
 }
 
 .driver-avatar {
-  display: grid;
-  place-items: center;
-  width: 78px;
-  height: 86px;
+  display: block;
+  width: 88px;
+  height: 106px;
   flex-shrink: 0;
-  font-size: 30px;
-  color: var(--on-accent);
-  background: linear-gradient(160deg, var(--accent), rgba(var(--accent-rgb), 0.55));
+  object-fit: cover;
+  object-position: center 28%;
+  border: 2px solid var(--accent);
   clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
 }
 

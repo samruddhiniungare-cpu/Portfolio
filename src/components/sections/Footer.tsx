@@ -23,8 +23,7 @@ export default function Footer() {
             </span>
           </div>
           <p className="footer-tag">
-            Software engineer building fast, polished products.
-            {driver.available ? " Currently open to new opportunities." : " Currently heads-down shipping."}
+            {driver.tagline}
           </p>
           <div className="footer-socials mono">
             <a href={driver.github} target="_blank" rel="noreferrer" data-cursor="link">GITHUB</a>
@@ -44,9 +43,9 @@ export default function Footer() {
 
         <div className="footer-col">
           <h4 className="mono footer-col-title">BOX BOX</h4>
-          <a className="footer-link" href={`mailto:${driver.email}`} data-cursor="link">Email Me</a>
-          <a className="footer-link" href={driver.resume} target="_blank" rel="noreferrer" data-cursor="view">View Resume</a>
-          <button className="footer-link" onClick={() => scrollTo("#contact")} data-cursor="link">Contact Form</button>
+          <a className="footer-link" href={`mailto:${driver.email}`} data-cursor="link">Email Samruddhi</a>
+          <a className="footer-link" href={driver.github} target="_blank" rel="noreferrer">GitHub</a>
+          <a className="footer-link" href={driver.linkedin} target="_blank" rel="noreferrer">LinkedIn</a>
           <button className="footer-link footer-top" onClick={() => scrollTo(0)} data-cursor="link">
             Back to Grid <span aria-hidden="true">↑</span>
           </button>

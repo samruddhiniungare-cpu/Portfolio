@@ -223,6 +223,9 @@
   opacity: 0.6;
 }
 
+.resume-panel { min-height: 220px; display: flex; flex-direction: column; align-items: flex-start; }
+.resume-panel-copy { color: var(--text-dim); line-height: 1.65; max-width: 38ch; margin: 0 0 26px; }
+
 /* sent state */
 .radio-sent {
   text-align: center;

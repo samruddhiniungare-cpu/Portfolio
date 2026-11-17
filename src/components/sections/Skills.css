@@ -5,6 +5,13 @@
   align-items: start;
 }
 
+.telemetry-links { margin-top: 26px; border-top: 1px solid var(--line-soft); }
+.telemetry-links a { display: grid; grid-template-columns: 92px 1fr 18px; align-items: center; gap: 12px; padding: 14px 4px; border-bottom: 1px solid var(--line-soft); color: var(--text-dim); transition: color .2s ease, padding .2s ease; }
+.telemetry-links a:hover { color: var(--text); padding-inline: 10px; }
+.telemetry-links .mono { color: var(--accent); font-size: 9px; }
+.telemetry-links strong { min-width: 0; overflow-wrap: anywhere; font-size: 13px; font-weight: 500; }
+.telemetry-links a > span:last-child { color: var(--accent); }
+
 /* ── telemetry panel ── */
 .tel-panel {
   padding: 26px 28px 22px;

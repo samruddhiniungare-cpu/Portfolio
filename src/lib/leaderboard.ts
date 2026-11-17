@@ -131,7 +131,7 @@ function dedupeByName(entries: Entry[]): Entry[] {
 async function fetchRemoteBoard(game: Game): Promise<Entry[]> {
   let remote: Entry[] = [];
 
-  if (supabaseReady) {
+  if (supabase) {
     try {
       const { data } = await supabase
         .from("arcade_leaderboard")
@@ -284,7 +284,7 @@ export async function submitScore(
 
   let globalResult: SubmitResult | null = null;
 
-  if (supabaseReady && email && entry.consent && isBest) {
+  if (supabase && email && entry.consent && isBest) {
     if (!entry.turnstileToken) {
       return { savedPermanently: false, error: "Complete the bot check below." };
     }

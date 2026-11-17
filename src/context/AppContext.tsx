@@ -61,7 +61,7 @@ function applyAccent(hex: string) {
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(true);
   const [accent, setAccentState] = useState(liveries[0].hex);
   const [goldUnlocked, setGoldUnlocked] = useState(
     () => typeof window !== "undefined" && localStorage.getItem("apex_gold") === "1"
@@ -113,7 +113,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     applyAccent(liveries[0].hex);
     const original = document.title;
     const onVis = () => {
-      document.title = document.hidden ? "📻 BOX BOX - come back!" : original;
+      document.title = document.hidden ? "Samruddhi · AI & ML" : original;
     };
     document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);

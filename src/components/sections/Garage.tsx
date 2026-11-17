@@ -53,7 +53,7 @@ export default function Garage() {
           scrollTrigger: {
             trigger: stageRef.current,
             start: "top top",
-            end: "+=280%",
+            end: "+=460%",
             scrub: 1.2,
             pin: true,
             anticipatePin: 1,
@@ -70,7 +70,7 @@ export default function Garage() {
           scrollTrigger: {
             trigger: stageRef.current,
             start: "top top",
-            end: "+=160%",
+            end: "+=280%",
             scrub: 1.2,
             pin: true,
             anticipatePin: 1,

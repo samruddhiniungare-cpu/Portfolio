@@ -108,6 +108,11 @@ export default function Skills() {
                 </div>
               </motion.div>
             ))}
+            <div className="telemetry-links" aria-label="Contact links">
+              <a href={`mailto:${driver.email}`}><span className="mono">EMAIL</span><strong>{driver.email}</strong><span aria-hidden="true">↗</span></a>
+              <a href={driver.linkedin} target="_blank" rel="noreferrer"><span className="mono">LINKEDIN</span><strong>Samruddhi Niungare</strong><span aria-hidden="true">↗</span></a>
+              <a href={driver.github} target="_blank" rel="noreferrer"><span className="mono">GITHUB</span><strong>{driver.githubUser}</strong><span aria-hidden="true">↗</span></a>
+            </div>
           </div>
         </div>
       </div>
